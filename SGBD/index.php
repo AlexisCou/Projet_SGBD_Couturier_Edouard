@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-require_once 'src/conf/connection.php';
-require_once 'src/actions/authentification.php';
+require_once __DIR__ . '/src/conf/connection.php';
+require_once __DIR__ . '/src/actions/authentification.php';
 
 $error = "";
 
