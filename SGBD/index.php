@@ -19,6 +19,7 @@ $capsule = new Capsule;
 $capsule->addConnection($conf);
 $capsule->setAsGlobal();
 $capsule->bootEloquent();
+$capsule->getConnection()->getPdo()->setAttribute(PDO::ATTR_AUTOCOMMIT, false);
 
 $commmandes = commande::all();
 foreach ($commmandes as $commande) {
