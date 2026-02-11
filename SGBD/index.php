@@ -22,8 +22,3 @@ $capsule->bootEloquent();
 $capsule->getConnection()->getPdo()->setAttribute(PDO::ATTR_AUTOCOMMIT, false);
 
 echo "<h1>Projet SGBD EDOUARD Justin COUTURIER Alexis</h1>";
-
-$commmandes = commande::all();
-foreach ($commmandes as $commande) {
-    echo $commande->quantite . "\n";
-}
