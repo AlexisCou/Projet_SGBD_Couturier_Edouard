@@ -41,7 +41,7 @@ if (!isset($_SESSION['user_id'])) {
             break;
         case 'menu':
         default:
-            include __DIR__ . '/src/views/menu_principal.php';
+            include __DIR__ . '/src/views/menu.php';
             break;
     }
 
