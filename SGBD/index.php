@@ -43,6 +43,9 @@ if (!isset($_SESSION['user_id'])) {
         default:
             include __DIR__ . '/src/views/menu.php';
             break;
+        case 'annuler':
+            include __DIR__ . '/src/actions/annuler.php';
+            break;    
     }
 
     include __DIR__ . '/src/views/footer.php';
