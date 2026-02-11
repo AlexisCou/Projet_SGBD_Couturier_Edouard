@@ -18,6 +18,12 @@ class dispatcher {
         $act = null; 
 
         switch ($this->action) {
+            case 'ShowPlats':
+                $act = new A\ShowPlatsAction();
+                break;
+            case 'ShowCommandes':
+                $act = new A\ShowCommandesAction();
+                break;
             case 'SignOut':
                 $act = new A\SignOutAction();
                 break;
@@ -48,6 +54,8 @@ class dispatcher {
         $page .= '<ul>';
         if (isset($_SESSION['username'])) {
             $page .= '<li><a href="?action=SignOut">Déconnexion</a></li>';
+            $page .= '<li><a href="?action=ShowCommandes">Liste des commandes</a></li>';
+            $page .= '<li><a href="?action=ShowPlats">Liste des plats</a></li>';
         } else {
             $page .= '<li><a href="?action=SignIn">Connexion</a></li>';
         }

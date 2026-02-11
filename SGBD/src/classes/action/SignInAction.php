@@ -32,7 +32,7 @@ class SignInAction extends Action
     {
         $username = $_POST['login'] ?? '';
         $passwd = $_POST['passwd'] ?? '';
-        $repo = new SGBDrepository();
+        $repo = SGBDrepository::getInstance();
         $result = $repo->connexion($username, $passwd);
         if ($result === "Connexion réussie") {
             $_SESSION['username'] = $username;
