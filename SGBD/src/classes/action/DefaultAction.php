@@ -2,7 +2,6 @@
 
 namespace SGBD\action;
 
-
 class DefaultAction extends Action {
 
     public function executeGet(): string {

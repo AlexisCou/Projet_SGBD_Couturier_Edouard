@@ -18,6 +18,9 @@ class dispatcher {
         $act = null; 
 
         switch ($this->action) {
+            case 'SignOut':
+                $act = new A\SignOutAction();
+                break;
             case 'SignIn':
                 $act = new A\SignInAction();
                 break;
