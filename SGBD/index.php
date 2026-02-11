@@ -1,43 +1,27 @@
 <?php
 session_start();
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+require_once 'src/conf/connection.php';
+require_once 'src/actions/authentification.php';
 
-require_once 'vendor/autoload.php';
-
-use SGBD\models\serveur; 
-use Illuminate\Database\Capsule\Manager as Capsule;
-
-$conf = parse_ini_file('src/conf/conf.ini');
-$capsule = new Capsule;
-$capsule->addConnection($conf);
-$capsule->setAsGlobal();
-$capsule->bootEloquent();
-
-$capsule->getConnection()->getPdo()->setAttribute(PDO::ATTR_AUTOCOMMIT, false);
+$error = "";
 
 if (isset($_POST['login_submit'])) {
-    $serv = serveur::where('login', $_POST['login'])->first();
-    
-    if ($serv && $serv->mdp === $_POST['password']) {
-        $_SESSION['user'] = $serv;
+    if (tenterConnexion($_POST['login'], $_POST['password'])) {
+        header("Location: index.php");
+        exit();
     } else {
-        $error = "Identifiants invalides";
+        $error = "Identifiants incorrects.";
     }
 }
 
-if (!isset($_SESSION['user'])) {
-    echo '<h2>Connexion Serveur</h2>';
-    if(isset($error)) echo "<p style='color:red'>$error</p>";
-    echo '<form method="POST">
-            Login: <input type="text" name="login"><br>
-            Mdp: <input type="password" name="password"><br>
-            <input type="submit" name="login_submit" value="Se connecter">
-          </form>';
-    exit();
+if (!isset($_SESSION['user_id'])) {
+    include 'src/views/login.php';
+} else {
+    include 'src/views/header.php';
+    echo "<h1>Bonjour " . $_SESSION['user_nom'] . "</h1>";
+    
+    include 'src/views/menu_principal.php'; 
+    
+    include 'src/views/footer.php';
 }
-
-echo "Bonjour " . $_SESSION['user']->nom . " !";
-?>
