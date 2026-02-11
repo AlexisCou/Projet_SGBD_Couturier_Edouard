@@ -4,7 +4,10 @@
     },
     "autoload": {
         "psr-4": {
-            "SGBD\\": "src/"
+            "SGBD\\": "src/classes/",
+            "SGBD\\models\\": "src/models/",
+            "SGBD\\repository\\": "src/repository/"
+
         }
     }
 }

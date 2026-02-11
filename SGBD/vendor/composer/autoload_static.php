@@ -26,6 +26,8 @@ class ComposerStaticInit95df92acc465cc692177ad724579d04b
             'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Contracts\\Translation\\' => 30,
             'Symfony\\Component\\Translation\\' => 30,
+            'SGBD\\repository\\' => 16,
+            'SGBD\\models\\' => 12,
             'SGBD\\' => 5,
         ),
         'P' => 
@@ -77,9 +79,17 @@ class ComposerStaticInit95df92acc465cc692177ad724579d04b
         array (
             0 => __DIR__ . '/..' . '/symfony/translation',
         ),
+        'SGBD\\repository\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src/repository',
+        ),
+        'SGBD\\models\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src/models',
+        ),
         'SGBD\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/src',
+            0 => __DIR__ . '/../..' . '/src/classes',
         ),
         'Psr\\SimpleCache\\' => 
         array (
@@ -95,9 +105,9 @@ class ComposerStaticInit95df92acc465cc692177ad724579d04b
         ),
         'Illuminate\\Support\\' => 
         array (
-            0 => __DIR__ . '/..' . '/illuminate/macroable',
+            0 => __DIR__ . '/..' . '/illuminate/collections',
             1 => __DIR__ . '/..' . '/illuminate/conditionable',
-            2 => __DIR__ . '/..' . '/illuminate/collections',
+            2 => __DIR__ . '/..' . '/illuminate/macroable',
             3 => __DIR__ . '/..' . '/illuminate/support',
         ),
         'Illuminate\\Database\\' => 
