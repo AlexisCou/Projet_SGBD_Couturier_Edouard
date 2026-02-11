@@ -20,6 +20,8 @@ $capsule->addConnection($conf);
 $capsule->setAsGlobal();
 $capsule->bootEloquent();
 
+echo "<h1>Projet SGBD EDOUARD Justin COUTURIER Alexis</h1>";
+
 $commmandes = commande::all();
 foreach ($commmandes as $commande) {
     echo $commande->quantite . "\n";
