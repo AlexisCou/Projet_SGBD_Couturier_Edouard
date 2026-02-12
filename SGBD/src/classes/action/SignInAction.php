@@ -36,6 +36,7 @@ class SignInAction extends Action
         $result = $repo->connexion($username, $passwd);
         if ($result === "Connexion réussie") {
             $_SESSION['username'] = $username;
+            $_SESSION['id'] = $repo->getServeurIdByUsername($username);
             header('Location: index.php?action=default');
             exit();
         } else {

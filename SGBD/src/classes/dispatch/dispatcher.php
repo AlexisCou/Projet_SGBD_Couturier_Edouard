@@ -21,8 +21,8 @@ class dispatcher {
             case 'ShowPlats':
                 $act = new A\ShowPlatsAction();
                 break;
-            case 'ShowCommandes':
-                $act = new A\ShowCommandesAction();
+            case 'ShowReservations':
+                $act = new A\ShowReservationsAction();
                 break;
             case 'SignOut':
                 $act = new A\SignOutAction();
@@ -53,9 +53,10 @@ class dispatcher {
         $page .= '<nav>';
         $page .= '<ul>';
         if (isset($_SESSION['username'])) {
-            $page .= '<li><a href="?action=SignOut">Déconnexion</a></li>';
-            $page .= '<li><a href="?action=ShowCommandes">Liste des commandes</a></li>';
+            $page .= '<li><a href="?action=default">Acceuil</a></li>';
+            $page .= '<li><a href="?action=ShowReservations">Liste des réservations</a></li>';
             $page .= '<li><a href="?action=ShowPlats">Liste des plats</a></li>';
+            $page .= '<li><a href="?action=SignOut">Déconnexion</a></li>';
         } else {
             $page .= '<li><a href="?action=SignIn">Connexion</a></li>';
         }

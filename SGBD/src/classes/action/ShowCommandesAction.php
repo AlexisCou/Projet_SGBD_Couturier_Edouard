@@ -23,11 +23,6 @@ class ShowCommandesAction extends Action
 
     protected function executePost(): string
     {
-        return <<<HTML
-            <h2>Échec de la connexion</h2>
-            <p>Identifiant ou mot de passe incorrect.</p>
-            <p><a href="?action=SignIn">Réessayer</a></p>
-            HTML;
-    
+        return $this->executeGet();
     }
 }

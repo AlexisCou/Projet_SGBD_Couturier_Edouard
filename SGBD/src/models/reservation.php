@@ -13,4 +13,9 @@ class reservation extends Model
     {
         return $this->belongsTo('\SGBD\models\tabl', 'numtab');
     }
+
+    public function serveur()
+    {
+        return $this->belongsTo('\SGBD\models\serveur', 'id_serv');
+    }
 }

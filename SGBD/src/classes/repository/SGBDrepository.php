@@ -49,9 +49,6 @@ class SGBDrepository{
         return commande::groupBy('numres')->get()->toArray();
     }
 
-    public function getPlats(){
-        return plat::all()->toArray();
-    }
 
     public function getPlatsByCommande(int $numres){
         $html = "<ul>";
@@ -75,4 +72,24 @@ class SGBDrepository{
         }
         return $prix;
     }
+
+    public function getPlats(){
+        return plat::all()->toArray();
+    }
+
+    public function getReservation(int $idserv){
+        return reservation::where('id_serv', $idserv)->get()->toArray();
+    }
+
+    public function getCommandesByReservation(int $numres){
+        return commande::where('numres', $numres)->get()->toArray();
+    }
+
+    public function getServeurIdByUsername(String $username){
+        $serveur = serveur::where('login', $username)->first();
+        return $serveur['id_serv'] ? $serveur['id_serv'] : 0;
+    }
+
+
+
 }
