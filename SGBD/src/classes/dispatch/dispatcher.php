@@ -18,6 +18,9 @@ class dispatcher {
         $act = null; 
 
         switch ($this->action) {
+            case 'ModifierPrix':
+                $act = new A\ModifierPrixAction();
+                break;
             case 'ShowPlats':
                 $act = new A\ShowPlatsAction();
                 break;
