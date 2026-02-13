@@ -30,6 +30,10 @@ class dispatcher {
             case 'SignIn':
                 $act = new A\SignInAction();
                 break;
+            case 'add-reservation':
+                $action = new \SGBD\action\AddReservationAction();
+                $this->renderPage($action->execute());
+                break;    
             default:
                 $act = new A\DefaultAction();
                 break;
@@ -54,6 +58,7 @@ class dispatcher {
         $page .= '<ul>';
         if (isset($_SESSION['username'])) {
             $page .= '<li><a href="?action=default">Acceuil</a></li>';
+            $page .= '<li><a href="?action=add-reservation">Ajouter une réservation</a></li>';
             $page .= '<li><a href="?action=ShowReservations">Liste des réservations</a></li>';
             $page .= '<li><a href="?action=ShowPlats">Liste des plats</a></li>';
             $page .= '<li><a href="?action=SignOut">Déconnexion</a></li>';

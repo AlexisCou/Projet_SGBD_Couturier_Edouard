@@ -64,6 +64,35 @@ class SGBDrepository{
         return $reponse;
     }
 
+    public function reserverTable(int $id_table, string $date_heure, int $nb_pers, int $id_serveur): bool {
+        $pdo = $this->getPDO();
+        
+        $pdo->beginTransaction();
+
+        try {
+            $queryCheck = "SELECT count(*) as total FROM RESERVATION WHERE numtab = ? AND dateres = ?";
+            $stmtCheck = $pdo->prepare($queryCheck);
+            $stmtCheck->execute([$id_table, $date_heure]);
+            $res = $stmtCheck->fetch();
+
+            if ($res['total'] > 0) {
+                $pdo->rollBack();
+                return false; 
+            }
+
+            $queryInsert = "INSERT INTO RESERVATION (dateres, nbpers, numtab, id_serv) VALUES (?, ?, ?, ?)";
+            $stmtInsert = $pdo->prepare($queryInsert);
+            $stmtInsert->execute([$date_heure, $nb_pers, $id_table, $id_serveur]);
+
+            $pdo->commit();
+            return true;
+
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            return false;
+        }
+    }
+
     public function getCommandes(){
         return commande::groupBy('numres')->get()->toArray();
     }
