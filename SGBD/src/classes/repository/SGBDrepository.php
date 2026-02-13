@@ -138,4 +138,23 @@ class SGBDrepository{
         return $serveur ? $serveur['id_serv'] : 0;
     }
 
+    public function getPlatsById(string $numplat){
+        $numplat = intval($numplat);
+        return plat::where('numplat', $numplat)->first()->toArray();
+    }
+
+    public function updatePrix(string $numplat, float $prix){
+        $numplat = intval($numplat);
+        if($prix < 0){
+            return false;
+        }
+        $plat = plat::where('numplat', $numplat)->first();
+        if ($plat) {
+            $plat->prixunit = $prix;
+            $plat->save();
+            return true;
+        }
+        return false;
+    }
+
 }
