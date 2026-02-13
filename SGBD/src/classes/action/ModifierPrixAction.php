@@ -30,14 +30,13 @@ class ModifierPrixAction extends Action
     {
         $newPrix = $_POST['prix'] ?? '';
         $platId = $_GET['id'] ?? '';
-        if (is_numeric($newPrix) && is_numeric($platId)) {
-            SGBDrepository::getInstance()->updatePrix($platId, (float)$newPrix);
+        if (SGBDrepository::getInstance()->updatePrix($platId, (float)$newPrix)) {
             header('Location: index.php?action=ShowPlats');
             exit();
         } else {
             return <<<HTML
                 <h2>Échec de la modification du prix</h2>
-                <p>Identifiant ou prix incorrect.</p>
+                <p>Prix incorrect.</p>
                 <p><a href="?action=ModifierPrix&id={$platId}">Réessayer</a></p>
                 HTML;
         }

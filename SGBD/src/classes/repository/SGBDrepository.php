@@ -116,6 +116,9 @@ class SGBDrepository{
 
     public function updatePrix(string $numplat, float $prix){
         $numplat = intval($numplat);
+        if($prix < 0){
+            return false;
+        }
         $plat = plat::where('numplat', $numplat)->first();
         if ($plat) {
             $plat->prixunit = $prix;
