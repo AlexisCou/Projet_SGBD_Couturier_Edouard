@@ -11,6 +11,8 @@ use SGBD\models\tabl;
 use SGBD\models\serveur;
 
 use Illuminate\Database\Capsule\Manager as Capsule;
+use PDO;
+use PDOException;
 
 $conf = parse_ini_file('src/conf/conf.ini');
 
@@ -22,6 +24,19 @@ $capsule->bootEloquent();
 class SGBDrepository{
 
     private static ?SGBDrepository $instance = null;
+    private ?PDO $pdo = null;
+
+    private function __construct() {
+        $conf = parse_ini_file('src/conf/conf.ini');
+        try {
+            $dsn = "mysql:host={$conf['host']};dbname={$conf['database']};charset=utf8";
+            $this->pdo = new PDO($dsn, $conf['username'], $conf['password'], [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+            ]);
+        } catch (PDOException $e) {
+        }
+    }
 
     public static function getInstance(): SGBDrepository {
         if (self::$instance === null) {
@@ -30,8 +45,12 @@ class SGBDrepository{
         return self::$instance;
     }
 
+    public function getPDO(): ?PDO {
+        return $this->pdo;
+    }
+
     public function connexion(String $username, String $password){
-        $reponse;
+        $reponse = "";
         $serveur = serveur::where('login','=',$username)->where('mdp','=',$password)->first();
         if(!$serveur){
             $reponse = "Il n'y a pas de serveur avec cet identifiant";
@@ -87,9 +106,7 @@ class SGBDrepository{
 
     public function getServeurIdByUsername(String $username){
         $serveur = serveur::where('login', $username)->first();
-        return $serveur['id_serv'] ? $serveur['id_serv'] : 0;
+        return $serveur ? $serveur['id_serv'] : 0;
     }
-
-
 
 }
