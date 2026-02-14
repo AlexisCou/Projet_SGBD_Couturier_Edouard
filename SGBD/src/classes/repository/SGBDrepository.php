@@ -50,12 +50,8 @@ class SGBDrepository {
 
     public function connexion(String $username, String $password) {
         $serveur = serveur::where('login','=',$username)->where('mdp','=',$password)->first();
-        if(!$serveur){
-            return "Il n'y a pas de serveur avec cet identifiant";
-        }
-        else {
-            return "Connexion réussie";
-        }
+        if(!$serveur) return "Il n'y a pas de serveur avec cet identifiant";
+        return "Connexion réussie";
     }
 
     public function reserverTable(int $id_table, string $date_heure, int $nb_pers, int $id_serveur): bool {
@@ -98,13 +94,8 @@ class SGBDrepository {
                 return false;
             }
 
-            $queryDelCom = "DELETE FROM commande WHERE numres = ?";
-            $stmtDelCom = $pdo->prepare($queryDelCom);
-            $stmtDelCom->execute([$numres]);
-
-            $queryDelete = "DELETE FROM reservation WHERE numres = ?";
-            $stmtDelete = $pdo->prepare($queryDelete);
-            $stmtDelete->execute([$numres]);
+            $pdo->prepare("DELETE FROM commande WHERE numres = ?")->execute([$numres]);
+            $pdo->prepare("DELETE FROM reservation WHERE numres = ?")->execute([$numres]);
 
             $pdo->commit();
             return true;
@@ -117,10 +108,8 @@ class SGBDrepository {
     public function ajouterPlatACommande(int $numres, int $numplat, int $quantite): bool {
         $pdo = $this->getPDO();
         $pdo->beginTransaction();
-
         try {
-            $qStock = "SELECT qteservie FROM plat WHERE numplat = ? FOR UPDATE";
-            $stStock = $pdo->prepare($qStock);
+            $stStock = $pdo->prepare("SELECT qteservie FROM plat WHERE numplat = ? FOR UPDATE");
             $stStock->execute([$numplat]);
             $platData = $stStock->fetch();
 
@@ -129,14 +118,9 @@ class SGBDrepository {
                 return false;
             }
 
-            $qUpdateStock = "UPDATE plat SET qteservie = qteservie - ? WHERE numplat = ?";
-            $stUpdate = $pdo->prepare($qUpdateStock);
-            $stUpdate->execute([$quantite, $numplat]);
-
-            $qInsertCom = "INSERT INTO commande (numres, numplat, quantite) VALUES (?, ?, ?) 
-                           ON DUPLICATE KEY UPDATE quantite = quantite + ?";
-            $stInsert = $pdo->prepare($qInsertCom);
-            $stInsert->execute([$numres, $numplat, $quantite, $quantite]);
+            $pdo->prepare("UPDATE plat SET qteservie = qteservie - ? WHERE numplat = ?")->execute([$quantite, $numplat]);
+            $pdo->prepare("INSERT INTO commande (numres, numplat, quantite) VALUES (?, ?, ?) 
+                           ON DUPLICATE KEY UPDATE quantite = quantite + ?")->execute([$numres, $numplat, $quantite, $quantite]);
 
             $pdo->commit();
             return true;
@@ -146,68 +130,61 @@ class SGBDrepository {
         }
     }
 
-    public function getCommandes(){
-        return commande::groupBy('numres')->get()->toArray();
+    public function encaisserReservation(int $numres, string $mode_paiement, float $montant_total): bool {
+        $pdo = $this->getPDO();
+        $pdo->beginTransaction();
+        try {
+            $query = "UPDATE reservation SET datpaie = NOW(), modpaie = ?, montcom = ? WHERE numres = ?";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute([$mode_paiement, $montant_total, $numres]);
+            
+            $pdo->commit();
+            return true;
+        } catch (\Exception $e) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            return false;
+        }
     }
 
     public function getPlatsByCommande(int $numres){
         $html = "<ul>";
-        $cmd = commande::where('numres', $numres)->get()->toArray();
+        $cmd = commande::where('numres', $numres)->get();
         foreach($cmd as $c){
-            $plat = plat::where('numplat', $c['numplat'])->first();
-            if ($plat) {
-                $html .= '<li>'.$plat['libelle'].' ('.$c['quantite'].'x)</li>';
-            }
+            $plat = plat::where('numplat', $c->numplat)->first();
+            if ($plat) $html .= "<li>{$plat->libelle} ({$c->quantite}x)</li>";
         }
-        $html .= "</ul>";
-        return $html;
+        return $html . "</ul>";
     }
 
-    public function getPrixByCommande(int $numres){
+    public function getPrixByCommande(int $numres): float {
         $prix = 0;
-        $cmd = commande::where('numres', $numres)->get()->toArray();
+        $cmd = commande::where('numres', $numres)->get();
         foreach($cmd as $c){
-            $plat = plat::where('numplat', $c['numplat'])->first();
-            if ($plat) {
-                $prix += $plat['prixunit'] * $c['quantite'];
-            }
+            $plat = plat::where('numplat', $c->numplat)->first();
+            if ($plat) $prix += $plat->prixunit * $c->quantite;
         }
-        return $prix;
+        return (float)$prix;
     }
 
-    public function getPlats(){
-        return plat::all()->toArray();
+    public function getPlatsById(string $numplat) {
+        $plat = plat::where('numplat', (int)$numplat)->first();
+        return $plat ? $plat->toArray() : null;
     }
 
-    public function getReservation(int $idserv){
-        return reservation::where('id_serv', $idserv)->get()->toArray();
-    }
-
-    public function getCommandesByReservation(int $numres){
-        return commande::where('numres', $numres)->get()->toArray();
-    }
-
-    public function getServeurIdByUsername(String $username){
-        $serveur = serveur::where('login', $username)->first();
-        return $serveur ? $serveur['id_serv'] : 0;
-    }
-
-    public function getPlatsById(string $numplat){
-        $numplat = intval($numplat);
-        return plat::where('numplat', $numplat)->first()->toArray();
-    }
-
-    public function updatePrix(string $numplat, float $prix){
-        $numplat = intval($numplat);
-        if($prix < 0){
+    public function updatePlat(int $numplat, float $prix, int $qte): bool {
+        $pdo = $this->getPDO();
+        $pdo->beginTransaction();
+        try {
+            if($prix < 0 || $qte < 0) { $pdo->rollBack(); return false; }
+            $pdo->prepare("UPDATE plat SET prixunit = ?, qteservie = ? WHERE numplat = ?")->execute([$prix, $qte, $numplat]);
+            $pdo->commit();
+            return true;
+        } catch (\Exception $e) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
             return false;
         }
-        $plat = plat::where('numplat', $numplat)->first();
-        if ($plat) {
-            $plat->prixunit = $prix;
-            $plat->save();
-            return true;
-        }
-        return false;
     }
+
+    public function getPlats() { return plat::all()->toArray(); }
+    public function getReservation(int $idserv) { return reservation::where('id_serv', $idserv)->get()->toArray(); }
 }
