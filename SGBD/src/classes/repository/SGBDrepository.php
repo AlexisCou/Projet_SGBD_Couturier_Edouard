@@ -14,14 +14,7 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 use PDO;
 use PDOException;
 
-$conf = parse_ini_file('src/conf/conf.ini');
-
-$capsule = new Capsule;
-$capsule->addConnection($conf);
-$capsule->setAsGlobal();
-$capsule->bootEloquent();
-
-class SGBDrepository{
+class SGBDrepository {
 
     private static ?SGBDrepository $instance = null;
     private ?PDO $pdo = null;
@@ -49,7 +42,7 @@ class SGBDrepository{
         return $this->pdo;
     }
 
-    public function connexion(String $username, String $password){
+    public function connexion(String $username, String $password) {
         $reponse = "";
         $serveur = serveur::where('login','=',$username)->where('mdp','=',$password)->first();
         if(!$serveur){
@@ -66,11 +59,10 @@ class SGBDrepository{
 
     public function reserverTable(int $id_table, string $date_heure, int $nb_pers, int $id_serveur): bool {
         $pdo = $this->getPDO();
-        
         $pdo->beginTransaction();
 
         try {
-            $queryCheck = "SELECT count(*) as total FROM RESERVATION WHERE numtab = ? AND dateres = ?";
+            $queryCheck = "SELECT count(*) as total FROM reservation WHERE numtab = ? AND datres = ?";
             $stmtCheck = $pdo->prepare($queryCheck);
             $stmtCheck->execute([$id_table, $date_heure]);
             $res = $stmtCheck->fetch();
@@ -80,15 +72,17 @@ class SGBDrepository{
                 return false; 
             }
 
-            $queryInsert = "INSERT INTO RESERVATION (dateres, nbpers, numtab, id_serv) VALUES (?, ?, ?, ?)";
+            $queryInsert = "INSERT INTO reservation (datres, nbpers, numtab, id_serv) VALUES (?, ?, ?, ?)";
             $stmtInsert = $pdo->prepare($queryInsert);
             $stmtInsert->execute([$date_heure, $nb_pers, $id_table, $id_serveur]);
 
             $pdo->commit();
             return true;
 
-        } catch (Exception $e) {
-            $pdo->rollBack();
+        } catch (\Exception $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             return false;
         }
     }
@@ -97,10 +91,9 @@ class SGBDrepository{
         return commande::groupBy('numres')->get()->toArray();
     }
 
-
     public function getPlatsByCommande(int $numres){
         $html = "<ul>";
-        $cmd =commande::where('numres', $numres)->get()->toArray();
+        $cmd = commande::where('numres', $numres)->get()->toArray();
         foreach($cmd as $c){
             $plat = plat::where('numplat', $c['numplat'])->first();
             $quantity = $c['quantite'];
@@ -112,7 +105,7 @@ class SGBDrepository{
 
     public function getPrixByCommande(int $numres){
         $prix = 0;
-        $cmd =commande::where('numres', $numres)->get()->toArray();
+        $cmd = commande::where('numres', $numres)->get()->toArray();
         foreach($cmd as $c){
             $plat = plat::where('numplat', $c['numplat'])->first();
             $quantity = $c['quantite'];
@@ -156,5 +149,4 @@ class SGBDrepository{
         }
         return false;
     }
-
 }

@@ -14,7 +14,6 @@ class dispatcher {
 
     public function run(): void {
         $html = "";
-        
         $act = null; 
 
         switch ($this->action) {
@@ -34,15 +33,17 @@ class dispatcher {
                 $act = new A\SignInAction();
                 break;
             case 'add-reservation':
-                $action = new \SGBD\action\AddReservationAction();
-                $this->renderPage($action->execute());
+                $act = new \SGBD\action\AddReservationAction();
                 break;    
             default:
                 $act = new A\DefaultAction();
                 break;
         }
 
-        $html = $act(); 
+        if ($act !== null) {
+            $html = $act->execute();
+        }
+        
         $this->renderPage($html);
     }
 
@@ -60,7 +61,7 @@ class dispatcher {
         $page .= '<nav>';
         $page .= '<ul>';
         if (isset($_SESSION['username'])) {
-            $page .= '<li><a href="?action=default">Acceuil</a></li>';
+            $page .= '<li><a href="?action=default">Accueil</a></li>';
             $page .= '<li><a href="?action=add-reservation">Ajouter une réservation</a></li>';
             $page .= '<li><a href="?action=ShowReservations">Liste des réservations</a></li>';
             $page .= '<li><a href="?action=ShowPlats">Liste des plats</a></li>';
@@ -80,6 +81,5 @@ class dispatcher {
         $page .= '</html>';
 
         echo $page;
-
     }
 }
