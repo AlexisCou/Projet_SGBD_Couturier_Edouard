@@ -61,7 +61,6 @@ class SGBDrepository {
     public function reserverTable(int $id_table, string $date_heure, int $nb_pers, int $id_serveur): bool {
         $pdo = $this->getPDO();
         $pdo->beginTransaction();
-
         try {
             $queryCheck = "SELECT count(*) as total FROM reservation WHERE numtab = ? AND datres = ?";
             $stmtCheck = $pdo->prepare($queryCheck);
@@ -79,11 +78,8 @@ class SGBDrepository {
 
             $pdo->commit();
             return true;
-
         } catch (\Exception $e) {
-            if ($pdo->inTransaction()) {
-                $pdo->rollBack();
-            }
+            if ($pdo->inTransaction()) $pdo->rollBack();
             return false;
         }
     }
@@ -91,7 +87,6 @@ class SGBDrepository {
     public function annulerReservation(int $numres): bool {
         $pdo = $this->getPDO();
         $pdo->beginTransaction();
-
         try {
             $queryCheck = "SELECT datpaie FROM reservation WHERE numres = ? FOR UPDATE";
             $stmtCheck = $pdo->prepare($queryCheck);
@@ -113,11 +108,40 @@ class SGBDrepository {
 
             $pdo->commit();
             return true;
-
         } catch (\Exception $e) {
-            if ($pdo->inTransaction()) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            return false;
+        }
+    }
+
+    public function ajouterPlatACommande(int $numres, int $numplat, int $quantite): bool {
+        $pdo = $this->getPDO();
+        $pdo->beginTransaction();
+
+        try {
+            $qStock = "SELECT qteservie FROM plat WHERE numplat = ? FOR UPDATE";
+            $stStock = $pdo->prepare($qStock);
+            $stStock->execute([$numplat]);
+            $platData = $stStock->fetch();
+
+            if (!$platData || $platData['qteservie'] < $quantite) {
                 $pdo->rollBack();
+                return false;
             }
+
+            $qUpdateStock = "UPDATE plat SET qteservie = qteservie - ? WHERE numplat = ?";
+            $stUpdate = $pdo->prepare($qUpdateStock);
+            $stUpdate->execute([$quantite, $numplat]);
+
+            $qInsertCom = "INSERT INTO commande (numres, numplat, quantite) VALUES (?, ?, ?) 
+                           ON DUPLICATE KEY UPDATE quantite = quantite + ?";
+            $stInsert = $pdo->prepare($qInsertCom);
+            $stInsert->execute([$numres, $numplat, $quantite, $quantite]);
+
+            $pdo->commit();
+            return true;
+        } catch (\Exception $e) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
             return false;
         }
     }
@@ -131,8 +155,9 @@ class SGBDrepository {
         $cmd = commande::where('numres', $numres)->get()->toArray();
         foreach($cmd as $c){
             $plat = plat::where('numplat', $c['numplat'])->first();
-            $quantity = $c['quantite'];
-            $html .= '<li>'.$plat['libelle'].' ('.$quantity.'x)</li>';
+            if ($plat) {
+                $html .= '<li>'.$plat['libelle'].' ('.$c['quantite'].'x)</li>';
+            }
         }
         $html .= "</ul>";
         return $html;
@@ -143,8 +168,9 @@ class SGBDrepository {
         $cmd = commande::where('numres', $numres)->get()->toArray();
         foreach($cmd as $c){
             $plat = plat::where('numplat', $c['numplat'])->first();
-            $quantity = $c['quantite'];
-            $prix += $plat['prixunit'] * $quantity;
+            if ($plat) {
+                $prix += $plat['prixunit'] * $c['quantite'];
+            }
         }
         return $prix;
     }

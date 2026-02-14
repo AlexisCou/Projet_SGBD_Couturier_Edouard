@@ -38,7 +38,13 @@ class ShowReservationsAction extends Action
             $html .= '<p>Table n° : ' . $res['numtab'] . '</p>';
 
             $prix = $repo->getPrixByCommande($numres);
-            $html .= '<h4>Détail de la commande - Total : ' . $prix . '€</h4>';
+            $html .= '<h4>Détail de la commande - Total : ' . $prix . '€ ';
+            
+            if (is_null($res['datpaie'])) {
+                $html .= '<a href="?action=add-commande&numres=' . $numres . '" style="font-size: 0.7em; color: blue; text-decoration: none; margin-left: 10px;">[+ Ajouter un plat]</a>';
+            }
+            $html .= '</h4>';
+
             $html .= $repo->getPlatsByCommande($numres);
 
             if (is_null($res['datpaie'])) {
