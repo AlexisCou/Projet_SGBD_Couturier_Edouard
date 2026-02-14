@@ -34,7 +34,10 @@ class dispatcher {
                 break;
             case 'add-reservation':
                 $act = new \SGBD\action\AddReservationAction();
-                break;    
+                break;   
+            case 'cancel-reservation':
+                $act = new \SGBD\action\CancelReservationAction();
+                break;     
             default:
                 $act = new A\DefaultAction();
                 break;

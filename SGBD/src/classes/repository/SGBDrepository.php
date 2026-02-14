@@ -21,6 +21,12 @@ class SGBDrepository {
 
     private function __construct() {
         $conf = parse_ini_file('src/conf/conf.ini');
+
+        $capsule = new Capsule;
+        $capsule->addConnection($conf);
+        $capsule->setAsGlobal();
+        $capsule->bootEloquent();
+
         try {
             $dsn = "mysql:host={$conf['host']};dbname={$conf['database']};charset=utf8";
             $this->pdo = new PDO($dsn, $conf['username'], $conf['password'], [
@@ -43,18 +49,13 @@ class SGBDrepository {
     }
 
     public function connexion(String $username, String $password) {
-        $reponse = "";
         $serveur = serveur::where('login','=',$username)->where('mdp','=',$password)->first();
         if(!$serveur){
-            $reponse = "Il n'y a pas de serveur avec cet identifiant";
+            return "Il n'y a pas de serveur avec cet identifiant";
         }
-        else if($serveur->mdp != $password){
-            $reponse = "Mot de passe incorrect";
+        else {
+            return "Connexion réussie";
         }
-        else{
-            $reponse = "Connexion réussie";
-        }
-        return $reponse;
     }
 
     public function reserverTable(int $id_table, string $date_heure, int $nb_pers, int $id_serveur): bool {
@@ -75,6 +76,40 @@ class SGBDrepository {
             $queryInsert = "INSERT INTO reservation (datres, nbpers, numtab, id_serv) VALUES (?, ?, ?, ?)";
             $stmtInsert = $pdo->prepare($queryInsert);
             $stmtInsert->execute([$date_heure, $nb_pers, $id_table, $id_serveur]);
+
+            $pdo->commit();
+            return true;
+
+        } catch (\Exception $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            return false;
+        }
+    }
+
+    public function annulerReservation(int $numres): bool {
+        $pdo = $this->getPDO();
+        $pdo->beginTransaction();
+
+        try {
+            $queryCheck = "SELECT datpaie FROM reservation WHERE numres = ? FOR UPDATE";
+            $stmtCheck = $pdo->prepare($queryCheck);
+            $stmtCheck->execute([$numres]);
+            $res = $stmtCheck->fetch();
+
+            if (!$res || $res['datpaie'] !== null) {
+                $pdo->rollBack();
+                return false;
+            }
+
+            $queryDelCom = "DELETE FROM commande WHERE numres = ?";
+            $stmtDelCom = $pdo->prepare($queryDelCom);
+            $stmtDelCom->execute([$numres]);
+
+            $queryDelete = "DELETE FROM reservation WHERE numres = ?";
+            $stmtDelete = $pdo->prepare($queryDelete);
+            $stmtDelete->execute([$numres]);
 
             $pdo->commit();
             return true;
