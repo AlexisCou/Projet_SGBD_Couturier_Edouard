@@ -185,6 +185,11 @@ class SGBDrepository {
         }
     }
 
+    public function getServeurIdByUsername(String $username){
+        $serveur = serveur::where('login', $username)->first();
+        return $serveur ? $serveur['id_serv'] : 0;
+    }
+
     public function getPlats() { return plat::all()->toArray(); }
     public function getReservation(int $idserv) { return reservation::where('id_serv', $idserv)->get()->toArray(); }
 }

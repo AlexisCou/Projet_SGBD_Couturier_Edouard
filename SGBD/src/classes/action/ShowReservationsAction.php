@@ -21,6 +21,10 @@ class ShowReservationsAction extends Action
                 $html .= "<p style='color: red; font-weight: bold;'>Erreur : Impossible d'annuler la réservation n°$idToCancel (déjà consommée ou inexistante).</p>";
             }
         }
+        if (isset($_GET['pay_id'])) {
+            header('Location: ?action=PayReservation&numres=' . (int)$_GET['pay_id']);
+            exit();
+        }
 
         $reservations = $repo->getReservation((int)$_SESSION['id']);
 
@@ -52,6 +56,11 @@ class ShowReservationsAction extends Action
                            style="color: red; font-weight: bold;" 
                            onclick="return confirm(\'Voulez-vous vraiment annuler cette réservation ?\')">
                            [Annuler la réservation]
+                          </a>
+                          <a href="?action=ShowReservations&pay_id=' . $numres . '" 
+                           style="color: blue; font-weight: bold;" 
+                           onclick="return confirm(\'Voulez-vous payer cette réservation ?\')">
+                           [Payer la réservation]
                           </a></p>';
             } else {
                 $html .= '<p style="color: gray; font-style: italic;">Réservation consommée (payée le ' . $res['datpaie'] . ')</p>';

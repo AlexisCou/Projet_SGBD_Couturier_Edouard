@@ -17,6 +17,9 @@ class dispatcher {
         $act = null; 
 
         switch ($this->action) {
+            case 'PayReservation':
+                $act = new \SGBD\action\PayReservationAction();
+                break;
             case 'ModifierPrix':
                 $act = new A\ModifierPrixAction();
                 break;
