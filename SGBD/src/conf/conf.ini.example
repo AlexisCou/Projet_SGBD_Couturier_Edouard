@@ -1,6 +1,6 @@
 driver=mysql
 host=localhost
-database=Projet_SGBD
+database=nom_BD
 username=root
 password=root
 charset=utf8
