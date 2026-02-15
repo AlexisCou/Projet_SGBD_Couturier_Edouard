@@ -1,7 +1,7 @@
 driver=mysql
 host=localhost
 database=nom_BD
-username=root
-password=root
+username=nom_utilisateur_phpmyadmin
+password=mdp_utilisateur_phpmyadmin
 charset=utf8
 collation=utf8_unicode_ci
